@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:qrscanner/app/controllers/auth_controller.dart';
 import 'package:qrscanner/app/data/Models/product_model.dart';
 
 import '../controllers/detail_product_controller.dart';
@@ -12,6 +13,8 @@ class DetailProductView extends GetView<DetailProductController> {
   final TextEditingController codeC = TextEditingController();
   final TextEditingController nameC = TextEditingController();
   final TextEditingController qtyC = TextEditingController();
+  AuthController auth = Get.find<AuthController>();
+
   @override
   Widget build(BuildContext context) {
     codeC.text = product.code;
@@ -71,6 +74,7 @@ class DetailProductView extends GetView<DetailProductController> {
             ),
           ),
           SizedBox(height: 20),
+          if(auth.ifAdmin.value)
           ElevatedButton(
             onPressed: () async {
               if (controller.isLoadingUpdate.isFalse) {
@@ -109,6 +113,7 @@ class DetailProductView extends GetView<DetailProductController> {
               ),
             ),
           ),
+          auth.ifAdmin.value ? 
           TextButton(
             onPressed: () {
               Get.defaultDialog(
@@ -157,7 +162,7 @@ class DetailProductView extends GetView<DetailProductController> {
               "Delete Product",
               style: TextStyle(color: Colors.red.shade900),
             ),
-          ),
+          ) : SizedBox(),
         ],
       ),
     );

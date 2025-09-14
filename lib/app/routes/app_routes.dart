@@ -10,6 +10,7 @@ abstract class Routes {
   static const DETAIL_PRODUCT = _Paths.DETAIL_PRODUCT;
   static const PROFILE = _Paths.PROFILE;
   static const QR_SCANNER = _Paths.QR_SCANNER;
+  static const DATA_LIST_T_V_R_I = _Paths.DATA_LIST_T_V_R_I;
 }
 
 abstract class _Paths {
@@ -21,4 +22,5 @@ abstract class _Paths {
   static const DETAIL_PRODUCT = '/detail-product';
   static const PROFILE = '/profile';
   static const QR_SCANNER = '/qr-scanner';
+  static const DATA_LIST_T_V_R_I = '/data-list-t-v-r-i';
 }

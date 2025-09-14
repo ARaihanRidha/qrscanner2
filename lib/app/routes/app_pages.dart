@@ -1,5 +1,4 @@
 import 'package:get/get.dart';
-
 import '../modules/add_product/bindings/add_product_binding.dart';
 import '../modules/add_product/views/add_product_view.dart';
 import '../modules/detail_product/bindings/detail_product_binding.dart';

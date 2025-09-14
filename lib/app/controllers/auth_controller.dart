@@ -1,28 +1,37 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
 
 class AuthController extends GetxController {
   //TODO: Implement AuthController
-  String? uid; //cek kondisi ada auth atau tidak
-  //null  -> tidak ada user yg sedang login 
-  //uid  -> ada user yg sedang login 
-
+  String? uid; 
   late FirebaseAuth auth;
-
-  final count = 0.obs;
+  RxString role = "".obs;
+  var ifAdmin = false.obs;
   @override
   void onInit() {
     auth = FirebaseAuth.instance;
-
-    auth.authStateChanges().listen((event) {
+    auth.authStateChanges().listen((event) async {
       uid = event?.uid;
+      if (uid != null) {
+        var doc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+        ifAdmin.value = (doc.data()?['role'] == "admin");
+      } else {
+        ifAdmin.value = false;
+      }
     },);
     super.onInit();
   }
 
   Future<Map<String,dynamic>> login(String email, String password) async{
     try { 
-      await auth.signInWithEmailAndPassword(email: email, password: password);
+      
+
+      UserCredential userCredential = await auth.signInWithEmailAndPassword(email: email, password: password);
+      String uid = userCredential.user!.uid;
+
+      var doc = await FirebaseFirestore.instance.collection("users").doc(uid).get();
+      role.value = doc.data()?['role'];
       return {
         "error" : false,
         "message" : "login berhasil"
@@ -70,6 +79,4 @@ class AuthController extends GetxController {
   void onClose() {
     super.onClose();
   }
-
-  void increment() => count.value++;
 }
