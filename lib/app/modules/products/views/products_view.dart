@@ -12,7 +12,7 @@ class ProductsView extends GetView<ProductsController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('ProductsView'), centerTitle: true),
+      appBar: AppBar(title: const Text('Products List'), centerTitle: true),
       body: StreamBuilder(
         stream: controller.streamProducts() ,
         builder: (context, snapProducts) {

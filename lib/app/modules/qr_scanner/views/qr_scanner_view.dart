@@ -13,7 +13,7 @@ class QrScannerView extends GetView<QrScannerController> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('QrScannerView'),
+        title: const Text('QR Scanner Page'),
         centerTitle: true,
         actions: [
           IconButton(onPressed: () {

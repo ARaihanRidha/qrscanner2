@@ -75,14 +75,7 @@ class LoginView extends GetView<LoginController> {
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            "Email",
-                            style: TextStyle(
-                              fontSize: 15,
-                              color: Colors.grey,
-                              fontWeight: FontWeight.normal,
-                            ),
-                          ),
+                          
                           TextField(
                             autocorrect: false,
                             controller: emailC,
@@ -95,14 +88,7 @@ class LoginView extends GetView<LoginController> {
                             ),
                           ),
                           SizedBox(height: 20),
-                          Text(
-                            "Password",
-                            style: TextStyle(
-                              fontSize: 15,
-                              color: Colors.grey,
-                              fontWeight: FontWeight.normal,
-                            ),
-                          ),
+                          
                           Obx(() {
                             return TextField(
                               autocorrect: false,
@@ -129,54 +115,69 @@ class LoginView extends GetView<LoginController> {
                           SizedBox(height: 20),
                           SizedBox(
                             width: double.infinity,
-                            child: ElevatedButton(
-                              
-                              onPressed: () async {
-                                if (controller.isLoading.isFalse) {
-                                  if (emailC.text.isNotEmpty &&
-                                      passwordC.text.isNotEmpty) {
-                                    controller.isLoading.value = true;
-                                    Map<String, dynamic> hasil = await authC
-                                        .login(emailC.text, passwordC.text);
-                                    controller.isLoading.value = false;
-                            
-                                    if (hasil["error"] == true) {
-                                      Get.snackbar(
-                                        "Error",
-                                        hasil["message"],
-                                        backgroundColor: Colors.red,
-                                        colorText: Colors.white,
-                                      );
-                                    } else {
-                                      Get.offAllNamed(Routes.HOME);
-                                    }
-                                  } else {
-                                    Get.snackbar(
-                                      "Error",
-                                      "Email dan Password harus di isi",
-                                      backgroundColor: Colors.red,
-                                      colorText: Colors.white,
-                                    );
-                                  }
-                                }
-                              },
-                              style: ElevatedButton.styleFrom(
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadiusGeometry.circular(9),
+                            child: Obx(() {
+                              bool locked = authC.isLocked.value;
+                              return ElevatedButton(
+                                onPressed: locked
+                                    ? null
+                                    : () async {
+                                        if (controller.isLoading.isFalse) {
+                                          if (emailC.text.isNotEmpty &&
+                                              passwordC.text.isNotEmpty) {
+                                            controller.isLoading.value = true;
+                                            Map<String, dynamic> hasil =
+                                                await authC.login(
+                                                  emailC.text,
+                                                  passwordC.text,
+                                                );
+                                            controller.isLoading.value = false;
+
+                                            if (hasil["error"] == true) {
+                                              Get.snackbar(
+                                                "Error",
+                                                hasil["message"],
+                                                backgroundColor: Colors.red,
+                                                colorText: Colors.white,
+                                              );
+                                            } else {
+                                              Get.offAllNamed(Routes.HOME);
+                                            }
+                                          } else {
+                                            Get.snackbar(
+                                              "Error",
+                                              "Email dan Password harus di isi",
+                                              backgroundColor: Colors.red,
+                                              colorText: Colors.white,
+                                            );
+                                          }
+                                        }
+                                      },
+                                style: ElevatedButton.styleFrom(
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(9),
+                                  ),
+                                  padding: EdgeInsets.all(20),
+                                  backgroundColor: Colors.blue,
                                 ),
-                                padding: EdgeInsets.all(20),
-                                backgroundColor: Colors.blue,
-                              ),
-                            
-                              child: Obx(
-                                () => Text(
-                                  controller.isLoading.isFalse
-                                      ? "Login"
-                                      : "Loading.........",
-                                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                                ),
-                              ),
-                            ),
+                                child: controller.isLoading.isTrue
+                                    ? const Text(
+                                        "Loading...",
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      )
+                                    : Text(
+                                        locked
+                                            ? "Coba lagi dalam ${authC.remainingSeconds.value}s"
+                                            : "Login",
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                              );
+                            }),
                           ),
                         ],
                       ),

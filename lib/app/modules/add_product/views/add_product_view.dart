@@ -12,7 +12,7 @@ class AddProductView extends GetView<AddProductController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('AddProductView'), centerTitle: true),
+      appBar: AppBar(title: const Text('Add Product'), centerTitle: true),
       body: ListView(
         padding: EdgeInsets.all(20),
         children: [
@@ -67,7 +67,7 @@ class AddProductView extends GetView<AddProductController> {
                   });
                   controller.isLoading.value = false;
                   Get.back();
-                  Get.snackbar(hasil["error"] == true ? "Error": "Succeed", hasil["Message"]);
+                  Get.snackbar(hasil["error"] == true ? "Error": "Succeed", hasil["Message"], backgroundColor: Colors.green, colorText: Colors.white);
                 } else {
                   Get.snackbar("Error", "Please input all data");
                 }
