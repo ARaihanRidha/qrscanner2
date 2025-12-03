@@ -52,7 +52,6 @@ class HomeView extends GetView<HomeController> {
                     // Logo and Title
                     Row(
                       children: [
-                        // Ganti dengan asset logo jika ada, atau gunakan Icon
                         Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
@@ -60,7 +59,7 @@ class HomeView extends GetView<HomeController> {
                             shape: BoxShape.circle,
                           ),
                           child: Image.asset(
-                            "assets/icons/Vector.png", // Atau gunakan Icon(Icons.inventory_2, color: Colors.white, size: 32)
+                            "assets/icons/Vector.png", 
                             height: 40,
                             width: 40,
                           ),

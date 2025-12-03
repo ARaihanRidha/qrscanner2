@@ -3,7 +3,7 @@ version: 1.0.0+1
 publish_to: none
 description: A new Flutter project.
 environment:
-  sdk: ^3.8.1
+  sdk: ^3.8.0
 
 dependencies:
   cloud_firestore: ^5.6.12
@@ -14,7 +14,9 @@ dependencies:
   firebase_core: ^3.15.2
   flutter:
     sdk: flutter
+  flutter_secure_storage: ^9.2.4
   get: 4.7.2
+  local_auth: ^2.3.0
   mobile_scanner: ^7.0.1
   open_file: ^3.5.10
   path_provider: ^2.1.5

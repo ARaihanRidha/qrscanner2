@@ -7,6 +7,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 class AuthController extends GetxController {
   String? uid;
   late FirebaseAuth auth;
+  FirebaseFirestore firestore = FirebaseFirestore.instance; // Instance Firestore
+
   RxString role = "".obs;
   var ifAdmin = false.obs;
 
@@ -32,7 +34,7 @@ class AuthController extends GetxController {
     auth.authStateChanges().listen((event) async {
       uid = event?.uid;
       if (uid != null) {
-        var doc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+        var doc = await firestore.collection('users').doc(uid).get();
         ifAdmin.value = (doc.data()?['role'] == "admin");
       } else {
         ifAdmin.value = false;
@@ -40,6 +42,28 @@ class AuthController extends GetxController {
     });
     super.onInit();
   }
+
+  // ==========================================================
+  //  FITUR BARU: AUDIT LOGGING (Pencatat Jejak)
+  // ==========================================================
+  Future<void> addAuditLog(String activity, String details) async {
+    try {
+      String emailUser = auth.currentUser?.email ?? "Unknown/Belum Login";
+      
+      await firestore.collection('audit_logs').add({
+        'user_email': emailUser,
+        'activity': activity, // Contoh: "LOGIN", "DELETE", "LOGOUT"
+        'details': details,   // Penjelasan detail
+        'timestamp': FieldValue.serverTimestamp(), // Waktu server
+      });
+      
+      print("✔ Log Tersimpan: $activity");
+    } catch (e) {
+      print("❌ Gagal mencatat log: $e");
+    }
+  }
+  // ==========================================================
+
 
   // --- 1. LOGIN BIASA ---
   Future<Map<String, dynamic>> login(String email, String password) async {
@@ -60,8 +84,10 @@ class AuthController extends GetxController {
       _resetSecurityFlags();
 
       String uid = userCredential.user!.uid;
-      var doc = await FirebaseFirestore.instance.collection("users").doc(uid).get();
+      var doc = await firestore.collection("users").doc(uid).get();
       role.value = doc.data()?['role'];
+
+      // Log Login akan dipanggil di LoginController agar lebih fleksibel
 
       return {"error": false, "message": "Login berhasil"};
 
@@ -102,11 +128,8 @@ class AuthController extends GetxController {
     isLocked.value = true;
     remainingSeconds.value = duration;
 
-    // Kita tidak mereset failedAttempts agar hukuman berlanjut (eskalasi)
-    // failedAttempts.value = 0; <--- JANGAN DI RESET DISINI
-
     lockTimer?.cancel();
-    lockTimer = Timer.periodic(Duration(seconds: 1), (timer) {
+    lockTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (remainingSeconds.value > 0) {
         remainingSeconds.value--;
       } else {
@@ -131,7 +154,7 @@ class AuthController extends GetxController {
     await prefs.setString('emailForSignIn', email);
 
     var acs = ActionCodeSettings(
-      // ⚠️ GANTI URL INI DENGAN PROJECT FIREBASE KAMU
+      // Pastikan URL ini sesuai project Firebase Anda
       url: 'https://qrcode-9b8c5.firebaseapp.com/login',
       handleCodeInApp: true,
       androidPackageName: 'com.example.qrscanner',
@@ -140,6 +163,9 @@ class AuthController extends GetxController {
     );
 
     await auth.sendSignInLinkToEmail(email: email, actionCodeSettings: acs);
+    
+    // Log pengiriman link
+    addAuditLog("MAGIC_LINK_SENT", "Mengirim link login ke $email");
   }
 
   Future<Map<String, dynamic>> loginWithMagicLink(String urlLink) async {
@@ -157,12 +183,14 @@ class AuthController extends GetxController {
           emailLink: urlLink,
         );
 
-        // Reset hukuman jika berhasil masuk lewat link
         _resetSecurityFlags();
 
         String uid = userCredential.user!.uid;
-        var doc = await FirebaseFirestore.instance.collection("users").doc(uid).get();
+        var doc = await firestore.collection("users").doc(uid).get();
         role.value = doc.data()?['role'] ?? "user";
+
+        // Log Login Magic Link Sukses
+        addAuditLog("LOGIN_MAGIC_LINK", "User login sukses via Magic Link");
 
         return {"error": false, "message": "Login Magic Link Berhasil!"};
       } catch (e) {
@@ -175,6 +203,9 @@ class AuthController extends GetxController {
 
   Future<Map<String, dynamic>> logout() async {
     try {
+      // Log sebelum logout (selagi token masih aktif)
+      await addAuditLog("LOGOUT", "User melakukan logout");
+
       await auth.signOut();
       return {
         "error": false,
@@ -192,6 +223,7 @@ class AuthController extends GetxController {
       };
     }
   }
+
   @override
   void onClose() {
     lockTimer?.cancel();

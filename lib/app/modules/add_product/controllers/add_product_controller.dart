@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
+import 'package:qrscanner/app/controllers/auth_controller.dart';
 
 class AddProductController extends GetxController {
   //TODO: Implement AddProductController
@@ -13,6 +14,10 @@ class AddProductController extends GetxController {
       await firestore.collection("products").doc(hasil.id).update({ 
         "productId": hasil.id //blok kode ini dipakai untuk menyimpan id setiap data yg di input yg mana id nya itu otomatis dibikinin firebase
       });
+      Get.find<AuthController>().addAuditLog(
+      "ADD_PRODUCT", 
+      "Menambah produk baru: ${data["name"]} (Qty: ${data["qty"]})"
+    );
       return{
         "error": false,
         "Message": "Add Product Succeed"

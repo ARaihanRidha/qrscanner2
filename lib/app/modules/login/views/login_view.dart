@@ -9,7 +9,7 @@ class LoginView extends GetView<LoginController> {
 
   final TextEditingController emailC = TextEditingController();
   final TextEditingController passwordC = TextEditingController();
-  final AuthController authC = Get.find<AuthController>(); // Injeksi AuthController
+  final AuthController authC = Get.find<AuthController>();
 
   @override
   Widget build(BuildContext context) {
@@ -66,52 +66,66 @@ class LoginView extends GetView<LoginController> {
                       )),
                       const SizedBox(height: 20),
 
-                      // TOMBOL LOGIN UTAMA
+                      // TOMBOL LOGIN UTAMA (Update Disini)
                       SizedBox(
                         width: double.infinity,
                         child: Obx(() {
+                          // Kita ambil status locked dari AuthController
                           bool locked = authC.isLocked.value;
+                          
+                          // Kita ambil status loading dari LoginController
+                          bool loading = controller.isLoading.value;
+
                           return ElevatedButton(
-                            onPressed: locked
-                                ? null // Tombol mati jika terkunci
-                                : () async {
-                              if (controller.isLoading.isFalse) {
-                                if (emailC.text.isNotEmpty && passwordC.text.isNotEmpty) {
-                                  controller.isLoading.value = true;
-
-                                  var hasil = await authC.login(emailC.text, passwordC.text);
-
-                                  controller.isLoading.value = false;
-
-                                  if (hasil["error"] == true) {
-                                    Get.snackbar("Gagal", hasil["message"], backgroundColor: Colors.red, colorText: Colors.white);
-                                  } else {
-                                    Get.offAllNamed(Routes.HOME);
-                                  }
-                                } else {
-                                  Get.snackbar("Error", "Email & Password wajib diisi", backgroundColor: Colors.red, colorText: Colors.white);
-                                }
-                              }
-                            },
+                            onPressed: (locked || loading)
+                                ? null // Disable tombol jika terkunci atau sedang loading
+                                : () {
+                                    // PANGGIL FUNGSI CONTROLLER
+                                    // Tidak perlu logika if/else rumit disini lagi
+                                    controller.loginProcess(emailC.text, passwordC.text);
+                                  },
                             style: ElevatedButton.styleFrom(
                               padding: const EdgeInsets.all(20),
                               backgroundColor: Colors.blue,
                             ),
-                            child: controller.isLoading.isTrue
+                            child: loading
                                 ? const Text("Loading...", style: TextStyle(color: Colors.white))
                                 : Text(
-                              locked
-                                  ? "Tunggu ${authC.remainingSeconds.value}s"
-                                  : "Login",
-                              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                            ),
+                                    locked 
+                                      ? "Tunggu ${authC.remainingSeconds.value}s" 
+                                      : "Login",
+                                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                                  ),
                           );
                         }),
                       ),
 
-                      // ⭐️ FITUR MAGIC LINK (Hanya muncul jika sudah lewat hukuman 60s) ⭐️
+                      // --- TOMBOL BIOMETRIK ---
+                      const SizedBox(height: 20),
+                      const Text("Atau masuk dengan", style: TextStyle(color: Colors.grey)),
+                      const SizedBox(height: 10),
+                      InkWell(
+                        onTap: () => controller.loginBio(), // Panggil Biometrik
+                        child: Container(
+                          padding: const EdgeInsets.all(15),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.blue),
+                            borderRadius: BorderRadius.circular(10),
+                            color: Colors.blue.withOpacity(0.1),
+                          ),
+                          child: const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.fingerprint, size: 30, color: Colors.blue),
+                              SizedBox(width: 10),
+                              Text("Sidik Jari / Wajah", style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold)),
+                            ],
+                          ),
+                        ),
+                      ),
+                      
+                      // --- MAGIC LINK SECTION ---
                       Obx(() {
-                        // Jika authC.allowMagicLink bernilai TRUE, tampilkan tombol ini
                         if (authC.allowMagicLink.isTrue) {
                           return Column(
                             children: [
@@ -129,7 +143,7 @@ class LoginView extends GetView<LoginController> {
                             ],
                           );
                         } else {
-                          return const SizedBox.shrink(); // Sembunyikan jika belum waktunya
+                          return const SizedBox.shrink();
                         }
                       }),
 
